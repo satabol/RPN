@@ -230,7 +230,7 @@
                         {
                             case "+": stack.Push(a + b);break;
                             case "-": stack.Push(b - a); break;
-                            case "/": stack.Push(a / b); break;
+                            case "/": stack.Push(b / a); break;
                             case "*": stack.Push(a * b); break;
                             case "^": stack.Push(Math.Pow(b,a)); break;
                         }
