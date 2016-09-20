@@ -172,7 +172,7 @@
                     if (firstLO.Contains(el.Value))
                     {
                         if (buffer.Count != 0)
-                            while ((firstLO + secondLO).Contains(buffer.Peek().Value) || buffer.Peek().Value == "^" || el.Type == Emums.ElementaryUnitType.BinaryFunction || el.Type == Emums.ElementaryUnitType.UnaryFunction)
+                            while ((firstLO + secondLO).Contains(buffer.Peek().Value) || buffer.Peek().Value == "^" || buffer.Peek().Type == Emums.ElementaryUnitType.BinaryFunction || buffer.Peek().Type == Emums.ElementaryUnitType.UnaryFunction)
                             {
                                 result.Add(buffer.Pop());
                                 if (buffer.Count == 0) break;
@@ -183,7 +183,7 @@
                     if (secondLO.Contains(el.Value))
                     {
                         if (buffer.Count != 0)
-                            while (buffer.Count != 0 && secondLO.Contains(buffer.Peek().Value) || buffer.Peek().Value == "^" && buffer.Count != 0 || el.Type == Emums.ElementaryUnitType.BinaryFunction || el.Type == Emums.ElementaryUnitType.UnaryFunction)
+                            while ((buffer.Count != 0 && secondLO.Contains(buffer.Peek().Value)) || (buffer.Peek().Value == "^" && buffer.Count != 0) || buffer.Peek().Type == Emums.ElementaryUnitType.BinaryFunction || buffer.Peek().Type == Emums.ElementaryUnitType.UnaryFunction)
                             {
                                 result.Add(buffer.Pop());
                                 if (buffer.Count == 0) break;
@@ -313,7 +313,7 @@
             return ToFunc(inversePolishNotation);
         }
 
-        public static double Calculate(string expression, int x = 0)
+        public static double Calculate(string expression, double x = 0)
         {
             var exp = ToExpresion(expression);
             var inversePolishNotation = ToPolishNotation(exp);
