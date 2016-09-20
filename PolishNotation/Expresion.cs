@@ -187,59 +187,64 @@
         {
             return (x) =>
             {
-                var stack = new Stack<double>();
+                return Calculate(expression, x);
+            };
+        }
 
-                foreach(var el in expression)
+        private static double Calculate(Expression expression, double x)
+        {
+            var stack = new Stack<double>();
+
+            foreach (var el in expression)
+            {
+                if (el.Type == Emums.ElementaryUnitType.Digit)
                 {
-                    if(el.Type == Emums.ElementaryUnitType.Digit)
-                    {
-                        stack.Push(Convert.ToDouble(el.Value));
-                        continue;
-                    }
-
-                    if(el.Type == Emums.ElementaryUnitType.Variable)
-                    {
-                        stack.Push(x);
-                        continue;
-                    }
-
-                    if(el.Type == Emums.ElementaryUnitType.Function)
-                    {
-                        if(el.Value == "log")
-                        {
-                            var a = stack.Pop();
-
-                            var b = stack.Pop();
-
-                            stack.Push(Math.Log(b, a));
-
-                            continue;
-                        }
-                        var f = functions[el.Value];
-
-                        var arg = stack.Pop();
-
-                        stack.Push(f(arg));
-                    }
-
-                    if(el.Type == Emums.ElementaryUnitType.BinaryOperation)
-                    {
-                        var a = stack.Pop();
-                        var b = stack.Pop();
-                        switch (el.Value)
-                        {
-                            case "+": stack.Push(a + b);break;
-                            case "-": stack.Push(b - a); break;
-                            case "/": stack.Push(b / a); break;
-                            case "*": stack.Push(a * b); break;
-                            case "^": stack.Push(Math.Pow(b,a)); break;
-                        }
-                    }
+                    stack.Push(Convert.ToDouble(el.Value));
+                    continue;
                 }
 
+                if (el.Type == Emums.ElementaryUnitType.Variable)
+                {
+                    stack.Push(x);
+                    continue;
+                }
 
-                return stack.Pop();
-            };
+                if (el.Type == Emums.ElementaryUnitType.Function)
+                {
+                    if (el.Value == "log")
+                    {
+                        var a = stack.Pop();
+
+                        var b = stack.Pop();
+
+                        stack.Push(Math.Log(b, a));
+
+                        continue;
+                    }
+                    var f = functions[el.Value];
+
+                    var arg = stack.Pop();
+
+                    stack.Push(f(arg));
+                }
+
+                if (el.Type == Emums.ElementaryUnitType.BinaryOperation)
+                {
+                    var a = stack.Pop();
+                    var b = stack.Pop();
+                    switch (el.Value)
+                    {
+                        case "+": stack.Push(a + b); break;
+                        case "-": stack.Push(b - a); break;
+                        case "/": stack.Push(b / a); break;
+                        case "*": stack.Push(a * b); break;
+                        case "^": stack.Push(Math.Pow(b, a)); break;
+                    }
+                }
+            }
+
+
+            return stack.Pop();
         }
 
         internal IEnumerator<ElementaryUnit> GetEnumerator()
@@ -274,6 +279,13 @@
             var exp = ToExpresion(expression);
             var inversePolishNotation = ToPolishNotation(exp);
             return ToFunc(inversePolishNotation);
+        }
+
+        public static double Calculate(string expression, int x = 0)
+        {
+            var exp = ToExpresion(expression);
+            var inversePolishNotation = ToPolishNotation(exp);
+            return Calculate(inversePolishNotation, x);
         }
 
         IEnumerator<ElementaryUnit> IEnumerable<ElementaryUnit>.GetEnumerator()
