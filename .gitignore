@@ -243,3 +243,7 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+PolishNotation.Tests/PolishNotation.Tests.csproj
+PolishNotation.Tests/Properties/AssemblyInfo.cs
+PolishNotation.Tests/packages.config
+PolishNotation.Tests/UnitTest1.cs
