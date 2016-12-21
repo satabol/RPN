@@ -7,6 +7,7 @@
         UnaryOperation,
         UnaryFunction,
         BinaryFunction,
+        UserFunctions,
         Brackets,
         Variable,
         Constant
