@@ -42,20 +42,13 @@
         private static readonly Dictionary<string, Func<Stack<ElementaryUnit>, double>> user_functions = new Dictionary<string, Func<Stack<ElementaryUnit>, double>>
         {
             {
-                "rotate", (a) => {
-                 //Math.Log(a,b) 
-                 return (double)a.Count;
-                }
-            },
-            {
                 "rnd", (a) => {
-                 //Math.Log(a,b) 
-                 return (double)(new Random().Next());
+                    return (double)(new Random().Next());
                 }
             },
             {
                 "sin", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("sin-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -67,7 +60,7 @@
             },
             {
                 "cos", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("cos-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -79,7 +72,7 @@
             },
             {
                 "tg", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("tg-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -91,7 +84,7 @@
             },
             {
                 "ctg", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("tg-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -103,7 +96,7 @@
             },
             {
                 "sign", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("sign-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -115,7 +108,7 @@
             },
             {
                 "sqrt", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("sqrt-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -127,7 +120,7 @@
             },
             {
                 "abs", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("abs-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -139,7 +132,7 @@
             },
             {
                 "acos", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("acos-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -151,7 +144,7 @@
             },
             {
                 "asin", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("asin-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -163,7 +156,7 @@
             },
             {
                 "atan", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("atan-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -175,7 +168,7 @@
             },
             {
                 "actg", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("actg-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -187,7 +180,7 @@
             },
             {
                 "lg", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("lg-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -199,7 +192,7 @@
             },
             {
                 "ln", (a) => {
-                    if( a.Count<1 ) {
+                    if( a.Count!=1 ) {
                         throw new Exception("ln-function need one argument. It has "+a.Count+" argument(s).");
                     }
 
@@ -211,22 +204,24 @@
             },
             {
                 "log", (a) => {
-                    if( a.Count<2) {
+                    if( a.Count!=2) {
                         throw new Exception("log-function need two arguments. It has "+a.Count+" agrument(s).");
                     }
                     // Извлечение Pop даёт аргументы в правильной последовательности
                     ElementaryUnit param1=a.Pop();
                     ElementaryUnit param2=a.Pop();
-                    //while(a.Count>0) {
-                    //    param2 = param1;
-                    //    param1 = a.Pop();
-                    //}
                     double _param1 = Convert.ToDouble( param1.Value );
                     double _param2 = Convert.ToDouble( param2.Value );
                     double res = Math.Log(_param1, _param2);
                     return res;
                 }
             },
+            {
+                "count_arguments", (a) => {
+                    return (double)a.Count;
+                }
+            },
+
         };
 
         public static Expression ToExpresion(string expression)
@@ -276,17 +271,18 @@
                 {
                     string buffer = string.Empty;
                     var j = i;
-                    for (; j < expression.Length && char.IsLetter(expression[j]); j++)
+                    for (; j < expression.Length && (char.IsLetter(expression[j]) || expression[j] == '_'); j++)
                     {
                         buffer += expression[j];
                     }
                     i = j - 1;
 
-                    if (unaryFunctions.Keys.Contains(buffer)) {
-                        result.Add(new ElementaryUnit(Emums.ElementaryUnitType.UnaryFunction, buffer, i));
-                    } else if (binaryFunction.Keys.Contains(buffer)) {
-                        result.Add(new ElementaryUnit(Emums.ElementaryUnitType.BinaryFunction, buffer, i));
-                    } else if (constans.Keys.Contains(buffer)) {
+                    //if (unaryFunctions.Keys.Contains(buffer)) {
+                    //    result.Add(new ElementaryUnit(Emums.ElementaryUnitType.UnaryFunction, buffer, i));
+                    //} else if (binaryFunction.Keys.Contains(buffer)) {
+                    //    result.Add(new ElementaryUnit(Emums.ElementaryUnitType.BinaryFunction, buffer, i));
+                    //} else 
+                    if (constans.Keys.Contains(buffer)) {
                         result.Add(new ElementaryUnit(Emums.ElementaryUnitType.Constant, buffer, i));
                     } if (user_functions.Keys.Contains(buffer)) {
                         result.Add(new ElementaryUnit(Emums.ElementaryUnitType.UserFunctions, buffer, i));
