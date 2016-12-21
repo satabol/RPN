@@ -15,12 +15,19 @@ namespace ConsoleApplication_rpn {
             //Expression rpn = Expression.ToPolishNotation(Expression.ToExpresion("rotate(rnd(),2,3,4)+rotate(11)+log(10,11,12)+sin(0.5)"));
             string str_formula = "-(((count_arguments(1,2,3, rnd(4) )))-log(10,10))";
             //str_formula = "((rnd(1,2,3,4)))";
-            //str_formula = "-(-5)";
+            str_formula = "1+5*1*(2^2)";
+            str_formula = "-(+5%2)";
             try {
                 Console.WriteLine("Формула: " + str_formula);
                 Expression rpn = Expression.ToPolishNotation(Expression.ToExpresion(str_formula));
                 Console.WriteLine("rpn: " + rpn.ToString());
                 Console.WriteLine("Результат: " + Expression.Calculate(rpn));
+
+                str_formula = "5+2*3+0";
+                Console.WriteLine("Формула: " + str_formula);
+                rpn = Expression.ToPolishNotation(Expression.ToExpresion(str_formula));
+                Console.WriteLine("rpn: " + rpn.ToString());
+
                 Console.WriteLine("\n\n Расчёт по формуле:");
                 // Проверка формулы как функции:
                 str_formula = "-(-x)*3-x+pi";

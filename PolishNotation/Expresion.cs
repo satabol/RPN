@@ -9,7 +9,7 @@
 
     public class Expression:IEnumerable<ElementaryUnit>
     {
-        private static readonly char[] binaryOperators = new[] { '+', '-', '*', '/', '^' };
+        private static readonly char[] binaryOperators = new[] { '+', '-', '*', '/', '^', '%' };
 
         public static Dictionary<string, double> constans = new Dictionary<string, double>
         {
@@ -314,6 +314,9 @@
             var result = new List<ElementaryUnit>();
             var buffer = new Stack<ElementaryUnit>();
 
+            // Приоритеты операций:
+            string[] operations_priority = new string[] { "%", "^", "*/", "+-" };
+
             var firstLO = "+-";
             var secondLO = "*/";
             List<ElementaryUnitType> list_functions = new List<ElementaryUnitType> { ElementaryUnitType.UnaryFunction, ElementaryUnitType.BinaryFunction, ElementaryUnitType.UserFunctions };
@@ -367,12 +370,39 @@
                     continue;
                 }
 
+                if (el.Type == Emums.ElementaryUnitType.BinaryOperation) {
+                    // Найти в какой позиции находится оператор по приоритету:
+                    int pos_priority = -1;
+                    // Строка более приоритетных операторов:
+                    string more_priority_operators = "";
+                    for (int i=0; i<= operations_priority.Length-1; i++) {
+                        more_priority_operators += operations_priority[i];
+                        if (operations_priority[i].Contains(el.Value)==true) {
+                            pos_priority = i;
+                            break;
+                        }
+                    }
+                    if(pos_priority == -1) {
+                        throw new Exception("Неизвестный оператор '"+el.Value+"' в позиции "+el.Position);
+                    }
+                    while (buffer.Count != 0 &&
+                        (more_priority_operators.Contains(buffer.Peek().Value) || list_functions.Contains(buffer.Peek().Type))
+                        ) {
+                        result.Add(buffer.Pop());
+                        if (buffer.Count == 0) break;
+                    }
+
+                    buffer.Push(el);
+                    continue;
+                }
+
+                /*
                 if (el.Type == Emums.ElementaryUnitType.BinaryOperation)
                 {
                     if (el.Value == "^")
                     {
-                        while (buffer.Count != 0 && (buffer.Peek().Value == "^" || list_functions.Contains(el.Type))
-                            //|| el.Type == Emums.ElementaryUnitType.UnaryFunction || el.Type == Emums.ElementaryUnitType.BinaryFunction || el.Type == Emums.ElementaryUnitType.UserFunctions))
+                        while (buffer.Count != 0 && 
+                            (("^").Contains(buffer.Peek().Value) || list_functions.Contains(buffer.Peek().Type))
                             )
                         {
                             result.Add(buffer.Pop());
@@ -382,40 +412,33 @@
                         buffer.Push(el);
                         continue;
                     }
-                    if (firstLO.Contains(el.Value))
-                    {
-                        if (buffer.Count != 0)
-                            while ((firstLO + secondLO).Contains(buffer.Peek().Value)
-                                || buffer.Peek().Value == "^" 
-                                //|| buffer.Peek().Type == Emums.ElementaryUnitType.UnaryFunction || buffer.Peek().Type == Emums.ElementaryUnitType.BinaryFunction || buffer.Peek().Type == Emums.ElementaryUnitType.UserFunctions
-                                || list_functions.Contains(buffer.Peek().Type)
-                                )
+                    if (secondLO.Contains(el.Value)) {
+                        while ((buffer.Count != 0 &&
+                            (("^" + secondLO).Contains(buffer.Peek().Value))
+                            || list_functions.Contains(buffer.Peek().Type)
+                            )) {
+                            result.Add(buffer.Pop());
+                        }
 
-                            {
-                                result.Add(buffer.Pop());
-                                if (buffer.Count == 0) break;
-                            }
                         buffer.Push(el);
                         continue;
                     }
-                    if (secondLO.Contains(el.Value))
+                    if (firstLO.Contains(el.Value))
                     {
-                        if (buffer.Count != 0)
-                            while ((buffer.Count != 0 && secondLO.Contains(buffer.Peek().Value)) 
-                                || (buffer.Peek().Value == "^" && buffer.Count != 0) 
-                                //|| buffer.Peek().Type == Emums.ElementaryUnitType.UnaryFunction || buffer.Peek().Type == Emums.ElementaryUnitType.BinaryFunction || buffer.Peek().Type == Emums.ElementaryUnitType.UserFunctions
+                            while (buffer.Count != 0 && 
+                                (("^" + secondLO + firstLO).Contains(buffer.Peek().Value)
                                 || list_functions.Contains(buffer.Peek().Type)
-                                )
+                                ))
+
                             {
                                 result.Add(buffer.Pop());
-                                if (buffer.Count == 0) break;
                             }
-
                         buffer.Push(el);
                         continue;
                     }
                 }
-                Console.Write("Неизвестная функция "+el.Value);
+                */
+                throw new Exception("Неизвестная функция '"+el.Value+"' в позиции "+el.Position);
             }
 
             while (buffer.Count != 0)
@@ -565,6 +588,7 @@
                                     case "/": res = a / b; break;
                                     case "*": res = a * b; break;
                                     case "^": res = Math.Pow(a, b); break;
+                                    case "%": res = a % b; break;
                                 }
                             }
                             break;
@@ -619,7 +643,7 @@
                 stack.Pop();
                 while (stack.Peek().Value != "(") {
                     if (stack.Count == 0) {
-                        throw new Exception("Неверное количество открывающих и закрывающих скобок.");
+                        throw new Exception("Неверное количество открывающих и закрывающих скобок. поз:"+ stack.Peek().Position );
                     }
                     temp.Push(stack.Pop());
                 }
