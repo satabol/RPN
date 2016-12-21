@@ -284,7 +284,7 @@
                     //} else 
                     if (constans.Keys.Contains(buffer)) {
                         result.Add(new ElementaryUnit(Emums.ElementaryUnitType.Constant, buffer, i));
-                    } if (user_functions.Keys.Contains(buffer)) {
+                    }else if (user_functions.Keys.Contains(buffer)) {
                         result.Add(new ElementaryUnit(Emums.ElementaryUnitType.UserFunctions, buffer, i));
                     }else {
                         throw new Exception("Неизвестная функция '"+buffer+"' в позиции "+i);
@@ -440,7 +440,7 @@
             {
                 if (list_params.Contains( el.Type ) ) {
                     //stack.Push(Convert.ToDouble(el.Value));
-                    if (stack.Count>0 && stack.Peek().Value == ")" && el.Value==")") {
+                    if (stack.Count>0 && stack.Peek().Type==ElementaryUnitType.Brackets && stack.Peek().Value == ")" && el.Value==")") {
                         // Найти предыдущую скобку и уничтожить её, сохранив аргументы:
                         Stack<ElementaryUnit> temp = new Stack<ElementaryUnit>();
                         // Выкинуть первую закрывающую скобку:
@@ -461,9 +461,17 @@
                             stack.Push(temp.Pop());
                         }
                         stack.Push(el);
+                    } else if (el.Type == Emums.ElementaryUnitType.Variable) {
+                        stack.Push(new ElementaryUnit(ElementaryUnitType.Digit, x.ToString(), el.Position));
+                        continue;
+                    }else if (el.Type == Emums.ElementaryUnitType.Constant) {
+                        stack.Push(new ElementaryUnit(ElementaryUnitType.Digit, constans[el.Value].ToString(), el.Position) );
+                        continue;
                     } else {
                         stack.Push(el);
                     }
+
+                    
                     continue;
                 }
 
@@ -561,8 +569,7 @@
                             }
                             break;
                         default:
-                            throw new Exception("У операции "+el.Value + " должно быть 1 или 2 операнда");
-                            break;
+                            throw new Exception("У операции '"+el.Value + "' должно быть 1 или 2 операнда");
                     }
                     //stack.Push(new ElementaryUnit(ElementaryUnitType.Digit, res.ToString() ) );
                 } else {
