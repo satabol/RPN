@@ -16,7 +16,8 @@ namespace ConsoleApplication_rpn {
             string str_formula = "-(((count_arguments(1,2,3, rnd(4) )))-log(10,10))";
             //str_formula = "((rnd(1,2,3,4)))";
             str_formula = "1+5*1*(2^2)";
-            str_formula = "-(+5%2)";
+            str_formula = "5%2+(2*2+1)^2/5";
+            str_formula = "sum(1,2+sum(3,4))";
             try {
                 Console.WriteLine("Формула: " + str_formula);
                 Expression rpn = Expression.ToPolishNotation(Expression.ToExpresion(str_formula));

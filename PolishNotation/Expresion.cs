@@ -217,6 +217,20 @@
                 }
             },
             {
+                "sum", (a) => {
+                    if( a.Count!=2) {
+                        throw new Exception("sum-function need two arguments. It has "+a.Count+" agrument(s).");
+                    }
+                    // Извлечение Pop даёт аргументы в правильной последовательности
+                    ElementaryUnit param1=a.Pop();
+                    ElementaryUnit param2=a.Pop();
+                    double _param1 = Convert.ToDouble( param1.Value );
+                    double _param2 = Convert.ToDouble( param2.Value );
+                    double res = _param1+_param2;
+                    return res;
+                }
+            },
+            {
                 "count_arguments", (a) => {
                     return (double)a.Count;
                 }
@@ -232,16 +246,10 @@
 
             for (int i = 1; i < expression.Length; i++)
             {
-                //if (expression[i] == '-' && expression[i - 1] == '(')
-                //{
-                //    buf.Append("0");
-                //}
                 buf.Append(expression[i]);
             }
 
             expression = buf.ToString();
-
-            //if (expression[0] == '-') expression = "0" + expression;
 
             List<ElementaryUnit> result = new List<ElementaryUnit>();
 
@@ -277,17 +285,12 @@
                     }
                     i = j - 1;
 
-                    //if (unaryFunctions.Keys.Contains(buffer)) {
-                    //    result.Add(new ElementaryUnit(Emums.ElementaryUnitType.UnaryFunction, buffer, i));
-                    //} else if (binaryFunction.Keys.Contains(buffer)) {
-                    //    result.Add(new ElementaryUnit(Emums.ElementaryUnitType.BinaryFunction, buffer, i));
-                    //} else 
                     if (constans.Keys.Contains(buffer)) {
                         result.Add(new ElementaryUnit(Emums.ElementaryUnitType.Constant, buffer, i));
                     }else if (user_functions.Keys.Contains(buffer)) {
                         result.Add(new ElementaryUnit(Emums.ElementaryUnitType.UserFunctions, buffer, i));
                     }else {
-                        throw new Exception("Неизвестная функция '"+buffer+"' в позиции "+i);
+                        throw new Exception("Unknown function '"+buffer+"' at position "+i+" ");
                     }
                     continue;
                 }
@@ -317,8 +320,6 @@
             // Приоритеты операций:
             string[] operations_priority = new string[] { "%", "^", "*/", "+-" };
 
-            var firstLO = "+-";
-            var secondLO = "*/";
             List<ElementaryUnitType> list_functions = new List<ElementaryUnitType> { ElementaryUnitType.UnaryFunction, ElementaryUnitType.BinaryFunction, ElementaryUnitType.UserFunctions };
             List<ElementaryUnitType> list_params = new List<ElementaryUnitType> { ElementaryUnitType.Digit, ElementaryUnitType.Variable, ElementaryUnitType.Constant};
 
@@ -326,14 +327,11 @@
 
             foreach (var el in expression)
             {
-                //if (el.Type == Emums.ElementaryUnitType.Digit || el.Type == Emums.ElementaryUnitType.Variable || el.Type == Emums.ElementaryUnitType.Constant)
-                if (list_params.Contains(el.Type) ) {
+                if (list_params.Contains(el.Type)==true) {
                     result.Add(el);
                     continue;
                 }
-                //if (el.Type == Emums.ElementaryUnitType.UnaryFunction || el.Type == Emums.ElementaryUnitType.BinaryFunction || el.Type == Emums.ElementaryUnitType.UserFunctions)
-                if(list_functions.Contains(el.Type))
-                {
+                if (list_functions.Contains(el.Type)==true) {
                     buffer.Push(el);
                     continue;
                 }
@@ -343,19 +341,18 @@
                     if (el.Value == ")")
                     {
                         if(buffer.Count == 0) {
-                            throw new Exception("Несогласованное количество скобок в позиции " + el.Position);
+                            throw new Exception("Wrong bracket in position " + el.Position);
                         }
                         while (buffer.Peek().Value != "(")
                         {
                             ElementaryUnit last_unit = buffer.Pop();
                             result.Add(last_unit);
                             if (buffer.Count == 0) {
-                                throw new Exception("Несогласованное количество скобок в позиции "+el.Position);
+                                throw new Exception("Wrong bracket in position "+el.Position);
                             }
                         }
                         result.Add(el);
                         ElementaryUnit open_bracket = buffer.Pop();
-                        //if (el.Type == Emums.ElementaryUnitType.UnaryFunction || el.Type == Emums.ElementaryUnitType.BinaryFunction || el.Type == Emums.ElementaryUnitType.UserFunctions)
                         if (buffer.Count > 0) {
                             if (list_functions.Contains(buffer.Peek().Type)) {
                                 ElementaryUnit eu = buffer.Pop();
@@ -383,7 +380,7 @@
                         }
                     }
                     if(pos_priority == -1) {
-                        throw new Exception("Неизвестный оператор '"+el.Value+"' в позиции "+el.Position);
+                        throw new Exception("Unknown operator '"+el.Value+"' in position "+el.Position);
                     }
                     while (buffer.Count != 0 &&
                         (more_priority_operators.Contains(buffer.Peek().Value) || list_functions.Contains(buffer.Peek().Type))
@@ -395,54 +392,11 @@
                     buffer.Push(el);
                     continue;
                 }
-
-                /*
-                if (el.Type == Emums.ElementaryUnitType.BinaryOperation)
-                {
-                    if (el.Value == "^")
-                    {
-                        while (buffer.Count != 0 && 
-                            (("^").Contains(buffer.Peek().Value) || list_functions.Contains(buffer.Peek().Type))
-                            )
-                        {
-                            result.Add(buffer.Pop());
-                            if (buffer.Count == 0) break;
-                        }
-
-                        buffer.Push(el);
-                        continue;
-                    }
-                    if (secondLO.Contains(el.Value)) {
-                        while ((buffer.Count != 0 &&
-                            (("^" + secondLO).Contains(buffer.Peek().Value))
-                            || list_functions.Contains(buffer.Peek().Type)
-                            )) {
-                            result.Add(buffer.Pop());
-                        }
-
-                        buffer.Push(el);
-                        continue;
-                    }
-                    if (firstLO.Contains(el.Value))
-                    {
-                            while (buffer.Count != 0 && 
-                                (("^" + secondLO + firstLO).Contains(buffer.Peek().Value)
-                                || list_functions.Contains(buffer.Peek().Type)
-                                ))
-
-                            {
-                                result.Add(buffer.Pop());
-                            }
-                        buffer.Push(el);
-                        continue;
-                    }
-                }
-                */
                 throw new Exception("Неизвестная функция '"+el.Value+"' в позиции "+el.Position);
             }
-
-            while (buffer.Count != 0)
+            while (buffer.Count != 0) {
                 result.Add(buffer.Pop());
+            }
 
             return new Expression(result);
         }
@@ -462,7 +416,6 @@
             foreach (var el in expression)
             {
                 if (list_params.Contains( el.Type ) ) {
-                    //stack.Push(Convert.ToDouble(el.Value));
                     if (stack.Count>0 && stack.Peek().Type==ElementaryUnitType.Brackets && stack.Peek().Value == ")" && el.Value==")") {
                         // Найти предыдущую скобку и уничтожить её, сохранив аргументы:
                         Stack<ElementaryUnit> temp = new Stack<ElementaryUnit>();
@@ -498,25 +451,6 @@
                     continue;
                 }
 
-                //if (el.Type == Emums.ElementaryUnitType.Digit)
-                //{
-                //    stack.Push(Convert.ToDouble(el.Value));
-                //    continue;
-                //}
-
-                //if (el.Type == Emums.ElementaryUnitType.Constant)
-                //{
-                //    stack.Push(constans[el.Value]);
-                //    continue;
-                //}
-
-                //if (el.Type == Emums.ElementaryUnitType.Variable)
-                //{
-                //    stack.Push(x);
-                //    continue;
-                //}
-
-
                 // Выбрать из стека открывающие скобки, чтобы добраться до первого операнда:
                 int brackets_count = 0;
                 while(stack.Count>0 && stack.Peek().Type==ElementaryUnitType.Brackets && stack.Peek().Value == ")") {
@@ -531,7 +465,6 @@
                         stack_args.Push(stack.Pop());
                     }
                     // Убрать лишние открывающие скобки
-                    // TODO - сделать проверку, если стек кончится раньше, чем открывающие скобки
                     for (int i = 0; i <= brackets_count - 1; i++) {
                         if (stack.Peek().Type != ElementaryUnitType.Brackets || stack.Peek().Value != "(" || stack.Count == 0) {
                             throw new Exception("Неверное количество открывающих скобок");
@@ -554,7 +487,6 @@
                     }
                 }
                 // Убрать лишние открывающие скобки
-                // TODO - сделать проверку, если стек кончится раньше, чем открывающие скобки
                 for (int i = 0; i <= brackets_count - 1; i++) {
                     if (stack.Peek().Type != ElementaryUnitType.Brackets || stack.Peek().Value != "(" || stack.Count == 0) {
                         throw new Exception("Неверное количество открывающих скобок");
@@ -572,7 +504,7 @@
                                     case "+": res = a; break;
                                     case "-": res = -a; break;
                                     default: {
-                                            throw new Exception("Операция "+el.Value+" не разрешена с аргументом "+_a.Value);
+                                            throw new Exception("OPerator '"+el.Value+"' not allowed with '"+_a.Value+"'");
                                         }
                                 }
                             }
@@ -593,9 +525,8 @@
                             }
                             break;
                         default:
-                            throw new Exception("У операции '"+el.Value + "' должно быть 1 или 2 операнда");
+                            throw new Exception("Operator '"+el.Value + "' must have 1 or 2 arguments. Count arguments: "+ stack_args.Count+" ");
                     }
-                    //stack.Push(new ElementaryUnit(ElementaryUnitType.Digit, res.ToString() ) );
                 } else {
                     Func<Stack<ElementaryUnit>, double> func = user_functions[el.Value];
                     if (func != null) {
@@ -605,36 +536,9 @@
                     }
                 }
                 stack.Push(new ElementaryUnit(ElementaryUnitType.Digit, res.ToString()));
-
-                //if (el.Type == Emums.ElementaryUnitType.UnaryFunction)
-                //{
-                //    if (el.Value == "log")
-                //    {
-                //        var a = stack.Pop();
-                //        var b = stack.Pop();
-                //        double _a = Convert.ToDouble(a.Value);
-                //        double _b = Convert.ToDouble(b.Value);
-
-                //        stack.Push( new ElementaryUnit( ElementaryUnitType.Digit, Math.Log(_b, _a ).ToString() ) );
-                //    }
-                //    var f = unaryFunctions[el.Value];
-
-                //    var arg = stack.Pop();
-
-                //    stack.Push(f(arg));
-                //}
-
-                //if (el.Type == Emums.ElementaryUnitType.BinaryFunction)
-                //{
-                //    var a = stack.Pop();
-                //    var b = stack.Pop();
-
-                //    stack.Push(binaryFunction[el.Value](b, a));
-                //}
             }
 
 
-            //return stack.Pop();
             // Если вокруг последнего аргумента находятся скобки, то удалить все симметричные скобки:
             if (stack.Count > 0 && stack.Peek().Value == ")") {
                 // Найти предыдущую скобку и уничтожить её, сохранив аргументы:
