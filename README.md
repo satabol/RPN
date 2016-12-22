@@ -7,6 +7,11 @@ This is a simple library that can convert string in Func using RPN.
 ```
 and func - representation of the "-log(x,2)*sin(x)" as function of x.
 
+2016-12-22
+
+- variable length of arguments in functions. Ex: "count_arguments(1,2,3,4,5,6)", "count_arguments(1,2)"  // 2
+- lists. Ex: "list_length({1,2,3,4,5,6})" // 6
+
 ```csharp
 class Program {
         [STAThread]
