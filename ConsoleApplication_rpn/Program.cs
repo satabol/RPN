@@ -15,9 +15,14 @@ namespace ConsoleApplication_rpn {
             //Expression rpn = Expression.ToPolishNotation(Expression.ToExpresion("rotate(rnd(),2,3,4)+rotate(11)+log(10,11,12)+sin(0.5)"));
             string str_formula = "-(((count_arguments(1,2,3, rnd(4) )))-log(10,10))";
             //str_formula = "((rnd(1,2,3,4)))";
-            str_formula = "1+5*1*(2^2)";
-            str_formula = "5%2+(2*2+1)^2/5";
-            str_formula = "sum(1,2+sum(3,4))";
+            str_formula = "1+5*1*(2^2)"; // 21
+            str_formula = "5%2+(2*2+1)^2/5"; // 6
+            str_formula = "sum(1,2+sum(3,4))+sqrt(4)"; // 12
+            str_formula = "sum(1,2+sum(3, list_length({1,2,(3)}) ))+sqrt(4)"; // 11
+            str_formula = "((list_length({1,2,(3), ((sum(1,2)))})))+1+(1)"; // 6
+            str_formula = "1+list_length({1,2,3})"; //4
+            str_formula = "(((1)))+2"; // 3
+            str_formula = "((( (((1)))+2 )*3))"; // 9
             try {
                 Console.WriteLine("Формула: " + str_formula);
                 Expression rpn = Expression.ToPolishNotation(Expression.ToExpresion(str_formula));
@@ -37,8 +42,8 @@ namespace ConsoleApplication_rpn {
                 Func<double, double> func = Expression.ToDelegate(str_formula);
                 double res = func(10);
                 Console.WriteLine("Формула: " + str_formula);
-                Console.WriteLine("результат: "+res);
-            }catch(Exception _ex) {
+                Console.WriteLine("результат: " + res);
+            } catch(Exception _ex) {
                 Console.WriteLine(str_formula);
                 string ex_info = Utilities.getExceptionInfo(_ex);
                 //Clipboard.SetText(ex_info);

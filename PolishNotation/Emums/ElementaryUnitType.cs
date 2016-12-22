@@ -5,10 +5,11 @@
         Digit,
         BinaryOperation,
         UnaryOperation,
-        UnaryFunction,
-        BinaryFunction,
+        //UnaryFunction,
+        //BinaryFunction,
         UserFunctions,
-        Brackets,
+        RoundBrackets, CurveBrackets,
+        List,
         Variable,
         Constant
     }

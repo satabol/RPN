@@ -6,13 +6,13 @@
     {
         private ElementaryUnitType type;
 
-        private string value;
+        private object value;
 
         public ElementaryUnitType Type { get { return type; } }
 
-        public string Value { get { return value; } }
+        public object Value { get { return value; } }
 
-        public ElementaryUnit(ElementaryUnitType type, string value, int _Position=-1 )
+        public ElementaryUnit(ElementaryUnitType type, object value, int _Position=-1 )
         {
             this.type = type;
             this.value = value;
