@@ -1,15 +1,18 @@
 ﻿namespace PolishNotation.Emums
 {
-    internal enum ElementaryUnitType
+    public enum ElementaryUnitType
     {
         Digit,
         BinaryOperation,
-        UnaryOperation,
+        Comma,    //  Оператор разделителя аргументов функций и списков
+        Operator, // +,-,*,/,%,^
+        //UnaryOperation,
         //UnaryFunction,
         //BinaryFunction,
         UserFunctions,
         RoundBrackets, CurveBrackets,
-        List,
+        List,   // Просто списки
+        ArgumentList, // Аргументы функций
         Variable,
         Constant
     }

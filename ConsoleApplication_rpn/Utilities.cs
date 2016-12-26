@@ -18,10 +18,14 @@ namespace ConsoleApplication_rpn {
         }
 
         public static string getExceptionInfo( Exception ex ) {
+            string txt = "\nException:";
             StackTrace st = new StackTrace(ex, true);
-            StackFrame st_frame = st.GetFrame(st.FrameCount - 1);
-            string txt = "in: " + st_frame.GetFileName() + ":(" + st_frame.GetFileLineNumber() + "," + st_frame.GetFileColumnNumber() + ")" + "\n" + ex.Message;
-            txt += ex.StackTrace;
+            //StackFrame st_frame = st.GetFrame(st.FrameCount - 1);
+            for( int i=0; i<=st.FrameCount-1; i++) {
+                StackFrame st_frame = st.GetFrame(i);
+                txt += "\n"+i+". " + st_frame.GetFileName() + ":(" + st_frame.GetFileLineNumber() + "," + st_frame.GetFileColumnNumber() + ")" + "\n" + ex.Message;
+            }
+            txt += "\n"+ex.StackTrace;
             return txt;
         }
 
