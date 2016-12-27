@@ -40,7 +40,8 @@ namespace ConsoleApplication_rpn {
                 // Проверка формулы как функции:
                 str_formula = "-(-x)*3-x+pi";
                 str_formula = "-(-(-x))*3-x+pi";
-                str_formula = "{(-x+1+sin(-x+1-0*2+(-4))*0),-(-(-x{))}";
+                str_formula = "{(-x+1+sin(-x+1-0*2+(-4))*0),-(-(-x)), (1,2,3) }";
+                str_formula = "(1,2,3)"; // Разобраться, что делать в этом случае. Нужно выдавать ошибку. Пока не понятно как.
                 //str_formula = "(1)+2+sin(pi)";
                 //str_formula = "{sin(x),log(x,x)}";
                 //str_formula = "-(-x)*3-x";

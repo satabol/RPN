@@ -235,14 +235,6 @@
             {
                 char c = expression[i];
 
-                //// Очень страннрое условие не разрешающее иметь имена функций, начинающихся на букву 'x'.
-                //if (c == 'x' || c == 'X')
-                //{
-                //    prev_eu = new ElementaryUnit(Emums.ElementaryUnitType.Variable, Convert.ToString(c), i);
-                //    result.Add(prev_eu);
-                //    continue;
-                //}
-
                 if (binaryOperators.Contains(c))
                 {
                     if ("+-".Contains(c) && (
@@ -258,7 +250,6 @@
                     continue;
                 }
 
-                //if (c == '(' || c == ')')
                 if ("()".Contains(c) == true) {
                     prev_eu = new ElementaryUnit(Emums.ElementaryUnitType.RoundBrackets, Convert.ToString(c), i);
                     result.Add(prev_eu);
@@ -279,7 +270,6 @@
                     {
                         buffer += expression[j];
                     }
-                    //i = j - 1;
                     i += buffer.Length-1;
 
                     if (constans.Keys.Contains(buffer)) {
@@ -304,7 +294,6 @@
                     {
                         buffer += expression[j];
                     }
-                    //i = j - 1;
                     i += buffer.Length-1;
                     prev_eu = new ElementaryUnit(Emums.ElementaryUnitType.Digit, buffer, i);
                     result.Add(prev_eu);
@@ -322,6 +311,8 @@
             return new Expression(result);
         }
 
+        // Список операторов, которые используются в вычислениях.
+        // Позиция означает вес оператора. Вес оператора используется при создании обратной польской нотации и при вычислении выражения.
         private static List<string> list_operators_priority = new List<string> { "%", "^", "*/", "+-", };
         private static int index_operator_priority(ElementaryUnit eu ) {
             string str = eu.Value.ToString();
@@ -331,12 +322,15 @@
             }
             return index;
         }
+
+        // Список синтаксических элементов, участвующих в разборе обратной польской нотации:
         private static List<string> list_syntax_priority = new List<string> {  ",", "})", "{(", };
         private static int index_syntax_priority( string str ) {
             int index = list_syntax_priority.FindIndex(x => x.Contains(str));
             return index;
         }
 
+        // Используется при анализе выражения, для поиска пересечений скобок.
         private static string oposite_bracket(string str ) {
             switch (str) {
                 case "{":
@@ -365,23 +359,33 @@
 
             ElementaryUnit prev_eu = null;
             foreach (ElementaryUnit el in expression) {
+                // Аргументы просто разместить в стеке:
                 if (list_arguments.Contains(el.Type) == true) {
                     prev_eu = el;
                     result.Add(el);
                     continue;
                 }
+                // Функции просто разместить в буфере:
                 if (list_functions.Contains(el.Type) == true) {
                     prev_eu = el;
                     buffer.Push(el);
                     continue;
                 }
+
+                // При работе со скобками действия несколько сложнее.
                 if(list_syntax.Contains(el.Type) == true) {
+                    // Открывающую скобку надо поместить в обе стека.
+                    // Это помогает правильно определить количество аргументов для функций.
+                    // Такой подход позволяет создавать в выражениях переменное количество аргументов в функциях.
+                    // это позволяет не программировать при разборе выражения количество аргументов функций и это очень упрощает
+                    // разбор выражения. При этом любая функция воспринимается как функция с переменным числом аргументов, а проверка
+                    // аргументов на валиденость выполняется только перед вызовом функции вне алгоритма разбора выражения.
                     if( "({".Contains(el.Value.ToString())==true) {
                         buffer.Push(el);
                         result.Add(el);
                         continue;
                     }
-                    // Достать всё из буфера до предыдущего синтаксического элемента не больше такого же веса
+                    // Достать всё из буфера операторы до предыдущего синтаксического элемента
                     while (buffer.Count > 0) {
                         ElementaryUnit buffer_peek = buffer.Peek();
                         ElementaryUnit buffer_pop = null;
@@ -414,7 +418,7 @@
                 if (buffer.Count > 0) {
                     if (list_syntax.Contains(buffer.Peek().Type) == true) {
                     } else {
-                        // Выдавливать из буфера в результат операторы, если они выше по приоритету, т.к. должны выполниться раньше
+                        // Выдавливать из buffer в result операторы, если они выше по приоритету, т.к. должны выполниться раньше
                         while (buffer.Count > 0 && list_syntax.Contains(buffer.Peek().Type)==false && index_operator_priority(el) >= index_operator_priority(buffer.Peek())) {
                             result.Add(buffer.Pop());
                         }
@@ -430,138 +434,12 @@
 
             return new Expression(result);
         }
-
-        public static Expression ToPolishNotation00(Expression expression)
-        {
-            var result = new List<ElementaryUnit>();
-            var buffer = new Stack<ElementaryUnit>();
-
-            // Приоритеты операций:
-            string[] operations_priority = new string[] { "})", "{(", ",", "%", "^", "*/", "+-" };
-
-            List<ElementaryUnitType> list_functions = new List<ElementaryUnitType> { ElementaryUnitType.UserFunctions };
-            List<ElementaryUnitType> list_params = new List<ElementaryUnitType> { ElementaryUnitType.Digit, ElementaryUnitType.Variable, ElementaryUnitType.Constant};
-
-
-            ElementaryUnit prev_eu = null;
-            foreach (ElementaryUnit el in expression)
-            {
-                if (list_params.Contains(el.Type)==true) {
-                    if (prev_eu!=null && prev_eu.Type == ElementaryUnitType.Digit) {
-                        while (buffer.Count > 0 && !(buffer.Peek().Type == Emums.ElementaryUnitType.CurveBrackets && (string)(buffer.Peek().Value) == "{")) {
-                            result.Add(buffer.Pop());
-                        }
-                        if (buffer.Count == 0 || !(buffer.Peek().Type == Emums.ElementaryUnitType.CurveBrackets && (string)(buffer.Peek().Value) == "{")) {
-                            throw new Exception("Не найдена отрывающая фигурная скобка для элемента '" + el.ToString() + "' в позиции '" + el.Position + "'");
-                        }
-                    }
-                    prev_eu = el;
-                    result.Add(el);
-                    continue;
-                }
-                if (list_functions.Contains(el.Type)==true) {
-                    prev_eu = el;
-                    buffer.Push(el);
-                    continue;
-                }
-
-                //if (el.Type == Emums.ElementaryUnitType.Brackets || el.Type== Emums.ElementaryUnitType.CurveBrackets)
-                if( new[]{ Emums.ElementaryUnitType.RoundBrackets, Emums.ElementaryUnitType.CurveBrackets }.Contains(el.Type)==true )
-                {
-                    if (")}".Contains(el.Value.ToString()) == true) // == ")" || el.Value.ToString() == "}")
-                    {
-                        string oposide_bracket = Convert.ToString("({"[")}".IndexOf(el.Value.ToString())]);
-                        if (buffer.Count == 0) {
-                            throw new Exception("Wrong bracket in position " + el.Position);
-                        }
-                        while (buffer.Peek().Value.ToString() != oposide_bracket) {
-                            ElementaryUnit last_unit = buffer.Pop();
-                            result.Add(last_unit);
-                            if (buffer.Count == 0) {
-                                throw new Exception("Wrong bracket in position " + el.Position);
-                            }
-                        }
-                        prev_eu = el;
-                        result.Add(el);
-                        ElementaryUnit open_bracket = buffer.Pop();
-                        if (buffer.Count > 0) {
-                            if (list_functions.Contains(buffer.Peek().Type)) {
-                                ElementaryUnit eu = buffer.Pop();
-                                prev_eu = el;
-                                result.Add(eu);
-                            }
-                        }
-                        continue;
-                    } else if ("{".Contains(el.Value.ToString()) == true) {
-                        // Список может быть либо внутри функции, либо внутри другого списка. Скинуть все операции из буфера до открывающей круглой или фигурной скобки:
-                        if (buffer.Count > 0) {
-                            while (buffer.Count > 0 &&
-                                !(buffer.Peek().Type == Emums.ElementaryUnitType.CurveBrackets && (string)(buffer.Peek().Value) == "{" || buffer.Peek().Type == Emums.ElementaryUnitType.RoundBrackets && (string)(buffer.Peek().Value) == "(")) {
-                                result.Add(buffer.Pop());
-                            }
-                            if (buffer.Count == 0 || !(buffer.Peek().Type == Emums.ElementaryUnitType.CurveBrackets && (string)(buffer.Peek().Value) == "{" || buffer.Peek().Type == Emums.ElementaryUnitType.RoundBrackets && (string)(buffer.Peek().Value) == "(")) {
-                                throw new Exception("Не найдена отрывающая круглая или фигурная скобка для элемента '" + el.ToString() + "' в позиции '" + el.Position + "'");
-                            }
-                        }
-                        prev_eu = el;
-                        result.Add(el);
-                    }
-                    prev_eu = el;
-                    buffer.Push(el);
-                    continue;
-                }
-
-                if (el.Type == Emums.ElementaryUnitType.BinaryOperation) {
-                    // Найти в какой позиции находится оператор по приоритету:
-                    int pos_priority = -1;
-                    // Строка более приоритетных операторов:
-                    string more_priority_operators = "";
-                    for (int i=0; i<= operations_priority.Length-1; i++) {
-                        more_priority_operators += operations_priority[i];
-                        if (operations_priority[i].Contains(el.Value.ToString() )==true) {
-                            pos_priority = i;
-                            break;
-                        }
-                    }
-                    if(pos_priority == -1) {
-                        throw new Exception("Unknown operator '"+el.Value+"' in position "+el.Position);
-                    }
-                    // Сначала надо выполнить более приоритетные операторы и функции, поэтому перенести их из буфера в результирующий массив
-                    while (buffer.Count != 0 &&
-                        (more_priority_operators.Contains( buffer.Peek().Value.ToString() ) || list_functions.Contains(buffer.Peek().Type))
-                        ) {
-                        result.Add(buffer.Pop());
-                    }
-                    prev_eu = el;
-                    buffer.Push(el);
-                    continue;
-                }
-                throw new Exception("Неизвестная функция '"+el.Value+"' в позиции "+el.Position);
-            }
-            while (buffer.Count != 0) {
-                result.Add(buffer.Pop());
-            }
-
-            return new Expression(result);
-        }
-
-        //private static Func<double,double> ToFunc(Expression expression)
-        //{
-        //    return (x) =>
-        //    {
-        //        return Calculate(expression, x);
-        //    };
-        //}
-
+        
         private static Func<ElementaryUnit, ElementaryUnit> ToFunc( Expression expression ) {
             return ( x ) => {
                 return Calculate(expression, x);
             };
         }
-
-        //private static double Calculate( Expression expression, double x ) {
-        //    return _Calculate(expression, x);
-        //}
 
         private static ElementaryUnit Calculate( Expression expression, ElementaryUnit x ) {
             var stack = new Stack<ElementaryUnit>();
@@ -648,6 +526,8 @@
 
                                 double _param1 = 0;
                                 double _param2 = 0;
+                                // Примечание: именно в этом месте в дальнейшем можно быдет добавить логику работы с другими типами и
+                                // перегрузку операторов.
                                 // Упростить аргументы. Если они были указаны внутри круглых скобок, то нужно их извлечь из скобок:
                                 {
                                     List<ElementaryUnit> lst = new List<ElementaryUnit> { param1, param2 };
@@ -709,6 +589,7 @@
                     if (func != null) {
                         ElementaryUnit _param = stack_args.Pop();
                         Stack<ElementaryUnit> param = (Stack<ElementaryUnit>)_param.Value;
+                        // Извлечь параметры из скобок.
                         while (_param.Type == ElementaryUnitType.ArgumentList) {
                             Stack<ElementaryUnit> inner = ((Stack<ElementaryUnit>)_param.Value);
                             if (inner.Count>0 ) {
@@ -717,7 +598,7 @@
                                         _param = inner.Pop();
                                         continue;
                                     }else {
-                                        throw new Exception("Неверное количество аргументов при вызове функции '"+func_name+"'.");
+                                        throw new Exception("Неверный синтаксис определения аргументов при вызове функции '"+func_name+"' в позиции '"+_param.Position+"'");
                                     }
                                 }
                             }
@@ -758,6 +639,9 @@
                 throw new Exception("Проверьте синтаксис выражения. После завершения расчёта остались аргументы.");
             }
             ElementaryUnit eu_pop = stack.Pop();
+            if( new []{ ElementaryUnitType.List, ElementaryUnitType.Constant, ElementaryUnitType.Digit }.Contains(eu_pop.Type) == false) {
+                throw new Exception("Тип результата выражения не является допустимым ('"+Enum.GetName( typeof(ElementaryUnitType), eu_pop.Type)+"'). Результатом может быть только List, Constant или Digit. ");
+            }
             return eu_pop;
         }
 

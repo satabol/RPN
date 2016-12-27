@@ -12,7 +12,7 @@
         UserFunctions,
         RoundBrackets, CurveBrackets,
         List,   // Просто списки
-        ArgumentList, // Аргументы функций
+        ArgumentList, // Аргументы функций. Не может быть результатом вычисления.
         Variable,
         Constant
     }
